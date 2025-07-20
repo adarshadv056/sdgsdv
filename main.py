@@ -8,18 +8,17 @@ app = FastAPI()
 @app.post("/captcha")
 async def solve_captcha(file: UploadFile = File(...)):
     try:
-        # Load the uploaded image
         image = Image.open(file.file)
-
-        # Use OCR to extract text
         text = pytesseract.image_to_string(image)
 
-        # Expecting format like: "12345678 * 87654321"
-        parts = [int(s.strip()) for s in text.split('*')]
-        if len(parts) == 2:
-            result = parts[0] * parts[1]
-        else:
-            return JSONResponse(status_code=400, content={"error": "Could not detect proper multiplication format."})
+        # Expecting format like: 12345678 * 87654321
+        numbers = text.split("*")
+        if len(numbers) != 2:
+            return JSONResponse(status_code=400, content={"error": "Invalid format"})
+
+        num1 = int(numbers[0].strip())
+        num2 = int(numbers[1].strip())
+        result = num1 * num2
 
         return {
             "answer": result,
